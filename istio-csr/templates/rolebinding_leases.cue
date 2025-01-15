@@ -2,15 +2,18 @@ package templates
 
 import (
     rbacv1 "k8s.io/api/rbac/v1"
-    cfg "timoni.sh/istio-csr/templates/config"
+    timoniv1 "timoni.sh/core/v1alpha1"
 )
 
-#RoleBinding: rbacv1.#RoleBinding & {
-    #config:     cfg.#Config
+#RoleBindingLeases: rbacv1.#RoleBinding & {
+    #config:     #Config
+    #meta: timoniv1.#MetaComponent & {
+        #Meta: #config.metadata
+        #Component: "leases"
+    }
 	apiVersion: "rbac.authorization.k8s.io/v1"
-	kind:       "RoleBinding"
-	metadata: #config.metadata
-    metadata.name: "\(#config.metadata.name)-leases"
+    kind: "RoleBinding"
+    metadata: #meta
     metadata: namespace: #config.app.controller.leaderElectionNamespace
     subjects: [...rbacv1.#Subject] & [
         {
@@ -18,10 +21,10 @@ import (
             name: #config.metadata.name
             namespace: #config.metadata.namespace
         }
+    ]
     roleRef: rbacv1.#RoleRef & {
         apiGroup: "rbac.authorization.k8s.io"
         kind: "Role"
-        name: "\(#config.metadata.name)-leases"
+        name: #config.metadata.name
     }
-    ]
 }

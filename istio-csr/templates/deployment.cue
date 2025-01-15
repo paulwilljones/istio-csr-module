@@ -3,8 +3,7 @@ package templates
 import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	timoniv1 "timoni.sh/core/v1alpha1"
-	import "strings"
+	"strings"
 )
 
 #Deployment: appsv1.#Deployment & {
@@ -75,11 +74,11 @@ import (
 
 							// cert-manager
 							"--certificate-namespace=\(#config.app.certmanager.namespace)",
-							"--issuer-enabled=\(#config.app.certmanager.isser.enabled)",
+							"--issuer-enabled=\(#config.app.certmanager.issuer.enabled)",
 							"--issuer-name=\(#config.app.certmanager.issuer.name)",
 							"--issuer-kind=\(#config.app.certmanager.issuer.kind)",
 							"--issuer-group=\(#config.app.certmanager.issuer.group)",
-							"--preserve-certificate-requests=\(#config.certmanager.preserveCertificateRequests)",
+							"--preserve-certificate-requests=\(#config.app.certmanager.preserveCertificateRequests)",
 							
 							// AdditionalAnnotations
 						if #config.app.certmanager.additionalAnnotations != _|_ {
@@ -89,9 +88,9 @@ import (
 						}
 
 							// tls
-							"--root-ca-file=\(#config.app.tls.rootCAFile)"
+							"--root-ca-file=\(#config.app.tls.rootCAFile)",
 							for dnsName in #config.app.tls.certificateDNSNames { "--serving-certificate-dns-names=\(dnsName)", }
-							"--serving-certificate-duration=\(config.app.tls.certificateDuration)",
+							"--serving-certificate-duration=\(#config.app.tls.certificateDuration)",
 							"--trust-domain=\(#config.app.tls.trustDomain)",
 
 							// server
@@ -114,13 +113,13 @@ import (
 						if #config.app.controller.configmapNamespaceSelector != _|_ {
 							"--configmap-namespace-selector=\(#config.app.controller.configmapNamespaceSelector)",
 						}
-							"--disable-kubernetes-client-rate-limiter=\(config.app.controller.disableKubernetesClientRateLimiter)",
+							"--disable-kubernetes-client-rate-limiter=\(#config.app.controller.disableKubernetesClientRateLimiter)",
 
 							"--runtime-issuance-config-map-name=\(#config.app.runtimeConfiguration.name)",
 							"--runtime-issuance-config-map-namespace=\(#config.metadata.namespace)",
 					
 							// dynamic istiod cert
-							"--istiod-cert-enabled=\(#config.app.tls.istiodCertificateEnable }}",
+							"--istiod-cert-enabled=\(#config.app.tls.istiodCertificateEnable)",
 							"--istiod-cert-name=istiod-dynamic",
 							"--istiod-cert-namespace=\(#config.app.istio.namespace)",
 							"--istiod-cert-duration=\(#config.app.tls.istiodCertificateDuration)",
@@ -133,9 +132,11 @@ import (
 							#annotations: [for k,v in #config.app.certmanager.additionalAnnotations {k+"="+v}]
 							"--istiod-cert-additional-annotations=\(strings.Join(#annotations, ","))",
 						}
-							"--istiod-cert-istio-revisions=\(strings.Join(#config.app.istio.revisions))"
+							"--istiod-cert-istio-revisions=\(strings.Join(#config.app.istio.revisions, ","))"
 						]
+					if #config.volumeMounts != _|_ {
 						volumeMounts: #config.volumeMounts
+					}
 						resources: #config.resources
 						securityContext: #config.securityContext
 					}

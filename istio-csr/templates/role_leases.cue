@@ -2,32 +2,27 @@ package templates
 
 import (
     rbacv1 "k8s.io/api/rbac/v1"
-    cfg "timoni.sh/istio-csr/templates/config"
+    timoniv1 "timoni.sh/core/v1alpha1"
 )
 
 #RoleLeases: rbacv1.#Role & {
-	#config:     cfg.#Config
+	#config:     #Config
+    #meta: timoniv1.#MetaComponent & {
+        #Meta: #config.metadata
+        #Component: "leases"
+    }
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "Role"
-	metadata: #config.metadata
-    metadata.name: "\(#config.metadata.name)-leases"
+    metadata: #meta
     metadata: namespace: #config.app.controller.leaderElectionNamespace
     rules: [...rbacv1.#PolicyRule] & [
         {
-            apiGroups:
-            - "coordination.k8s.io"
-            resources:
-            - "leases"
-            verbs:
-            - "get"
-            - "list"
-            - "create"
-            - "update"
-            - "watch"
+            apiGroups: ["coordination.k8s.io"]
+            resources: ["leases"]
+            verbs: ["get", "list", "create", "update", "watch"]
         }, {
             apiGroups: [""]
-            resources:
-            - "events"
+            resources: ["events"]
             verbs: ["create"]
         }
     ]

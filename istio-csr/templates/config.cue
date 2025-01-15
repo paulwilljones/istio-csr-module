@@ -26,10 +26,10 @@ import (
 	// The labels allows adding `metadata.labels` to all resources.
 	// The `app.kubernetes.io/name` and `app.kubernetes.io/version` labels
 	// are automatically generated and can't be overwritten.
-	metadata: labels: timoniv1.#Labels
+	// metadata: labels: timoniv1.#Labels
 
-	// The annotations allows adding `metadata.annotations` to all resources.
-	metadata: annotations?: timoniv1.#Annotations
+	// // The annotations allows adding `metadata.annotations` to all resources.
+	// metadata: annotations: timoniv1.#Annotations
 
 	// The selector allows adding label selectors to Deployments and Services.
 	// The `app.kubernetes.io/name` label selector is automatically generated
@@ -63,12 +63,11 @@ import (
 	// By default, the container is denied privilege escalation.
 	securityContext: corev1.#SecurityContext & {
 		allowPrivilegeEscalation: *false | true
-		readOnlyRootFilesystem: true
-		privileged:               *false | true
-		capabilities:
-		{
+		readOnlyRootFilesystem: *true | false
+		runAsNonRoot: *true | false
+		// privileged:               *false | true
+		capabilities: {
 			drop: *["ALL"] | [string]
-			add: *["CHOWN", "NET_BIND_SERVICE", "SETGID", "SETUID"] | [string]
 		}
 	}
 
@@ -77,7 +76,7 @@ import (
 	service: {
 		type: *corev1.#ServiceTypeClusterIP | corev1.#enumServiceType
 		port: *443 | int & >0 & <=65535
-		nodePort?: int & >30000 & <= 32767
+		nodePort?: int & >30000 & <=32767
 	}
 
 	volumes?: [...corev1.#Volumes]
@@ -87,7 +86,7 @@ import (
 		logLevel: *1 | int & >=1 & <=5
 		logFormat: *"text" | "json"
 		metrics: {
-			port: *9402 | int & >0 & <=65535
+			port: *9402 | int & >=1 & <=65535
 		}
 		server: {
 			serving: {
@@ -98,7 +97,7 @@ import (
 				port: *6443 | int & >0 & <=65535
 			}
 			clusterID: *"Kubernetes" | string
-			maxCertificateDuration: *"1h" | #Duration
+			maxCertificateDuration: *"1h" | timoniv1.#Duration
 			authenticators: {
 				enableClientCert: *false | true
 			}
@@ -111,23 +110,23 @@ import (
 		controller: {
 			leaderElectionNamespace: *"istio-system" | string
 			configmapNamespaceSelector?: string
-			disableKubernetesClientRateLimiter: false | bool
+			disableKubernetesClientRateLimiter: *false | bool
 		}
 		tls: {
-			rootCAFile?: string
+			rootCAFile: *"" | string
 			certificateDNSNames: *["cert-manager-istio-csr.cert-manager.svc"] | [string]
-			certificateDuration: *"1h" | #Duration
+			certificateDuration: *"1h" | timoniv1.#Duration
 			trustDomain: *"cluster.local" | string
 			istiodCertificateEnable: *"true" | "dynamic" | "false"
-			istiodCertificateDuration: *"1h" | #Duration
-			istiodCertificateRenewBefore: *"30m" | #Duration
+			istiodCertificateDuration: *"1h" | timoniv1.#Duration
+			istiodCertificateRenewBefore: *"30m" | timoniv1.#Duration
 			istiodPrivateKeyAlgorithm: *app.server.serving.signatureAlgorithm | "RSA" | "ECDSA"
 			istiodPrivateKeySize: *2048 | int
 			istiodAdditionalDNSNames: *[] | [string]
 		}
 		readinessProbe: {
-			port: 6060 | int & >0 & <=65535
-			path: "/readyz" | string
+			port: *6060 | int & >0 & <=65535
+			path: *"/readyz" | string
 		}
 		certmanager: {
 			additionalAnnotations?: timoniv1.#Annotations
@@ -152,7 +151,7 @@ import (
 	}
 
 	// Pod optional settings.
-	podAnnotations?: corev1.#{[string]: string}
+	podAnnotations?: {[string]: string}
 	podSecurityContext?: corev1.#PodSecurityContext
 	imagePullSecrets?: [...timoniv1.#ObjectReference]
 	tolerations?: [...corev1.#Toleration]
@@ -160,6 +159,10 @@ import (
 	nodeSelector?: corev1.NodeSelector
 	topologySpreadConstraints?: [...corev1.#TopologySpreadConstraint]
 	extraObjects?: [...timoniv1.#ObjectReference]
+
+	test: {
+		enabled: *false | bool
+	}
 }
 
 // Instance takes the config values and outputs the Kubernetes objects.
@@ -175,13 +178,18 @@ import (
 		role: #Role & {#config: config}
 		roleBinding: #RoleBinding & {#config: config}
 		roleLeases: #RoleLeases & {#config: config}
-		roleBindingLeases: #RoleLeasesBinding
+		roleBindingLeases: #RoleBindingLeases& {#config: config}
 		if config.app.tls.istiodCertificateEnable == "dynamic" {
 			roleDynamicCert: #RoleDynamicCert & {#config: config}
 		}
 		roleBindingDynamicCert: #RoleBindingDynamicCert & {#config: config}
-		for resource in config.extraObjects {
-			"\(resource.metadata.name)": resource
+		if config.extraObjects != _|_ {
+			for resource in config.extraObjects {
+				"\(resource.metadata.name)": resource
+			}
 		}
+	}
+	tests: {
+		test: #Deployment & {#config: config}
 	}
 }

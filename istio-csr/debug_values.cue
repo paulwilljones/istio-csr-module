@@ -6,7 +6,6 @@ package main
 // Debug example 'cue cmd -t debug -t name=test -t namespace=test -t mv=1.0.0 -t kv=1.28.0 build'.
 values: {
 	podAnnotations: "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
-	message: "Hello Debug"
 	image: {
 		repository: "docker.io/nginx"
 		tag:        "1-alpine"

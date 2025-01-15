@@ -17,4 +17,3 @@ package v1alpha1
 	// Standard Kubernetes label: app name.
 	labels: (#StdLabelName): #Name
 }
-Selector
