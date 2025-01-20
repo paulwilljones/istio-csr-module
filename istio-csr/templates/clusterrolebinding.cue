@@ -7,7 +7,7 @@ import (
 #ClusterRoleBinding: rbacv1.#ClusterRoleBinding & {
     #config:     #Config
 	apiVersion: "rbac.authorization.k8s.io/v1"
-	kind:       "RoleBinding"
+	kind:       "ClusterRoleBinding"
 	metadata: #config.metadata
     subjects: [...rbacv1.#Subject] & [
         {

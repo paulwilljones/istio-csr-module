@@ -12,4 +12,5 @@ values: {
 		digest:     "sha256:1f761380cd12767e0cbe0840bb829d4c530635e15eead11ff217fc3a6d1d05d2"
 		tag:        "0.13.0"
 	}
+	moduleVersion: "0.0.0-devel"
 }

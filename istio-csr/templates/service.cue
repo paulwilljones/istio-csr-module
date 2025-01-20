@@ -17,7 +17,7 @@ import (
 				port:       #config.service.port
 				protocol:   corev1.#ProtocolTCP
 				name:       "web"
-				targetPort: name
+				targetPort: #config.app.server.serving.port
 			if #config.service.nodePort != _|_ {
 				nodePort:	#config.service.nodePort
 			}

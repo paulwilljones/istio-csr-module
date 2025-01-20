@@ -17,6 +17,9 @@ import (
 		template: corev1.#PodTemplateSpec & {
 			metadata: {
 				labels: #config.selector.labels
+				if #config.podLabels != _|_ {
+					labels: #config.podLabels
+				}
 				if #config.podAnnotations != _|_ {
 					annotations: #config.podAnnotations
 				}
@@ -119,7 +122,12 @@ import (
 							"--runtime-issuance-config-map-namespace=\(#config.metadata.namespace)",
 					
 							// dynamic istiod cert
-							"--istiod-cert-enabled=\(#config.app.tls.istiodCertificateEnable)",
+						if #config.app.tls.istiodCertificateEnable == "dynamic" {
+							"--istiod-cert-enabled=true",
+						}
+						if #config.app.tls.istiodCertificateEnable != "dynamic" {
+							"--istiod-cert-enabled=false",
+						}
 							"--istiod-cert-name=istiod-dynamic",
 							"--istiod-cert-namespace=\(#config.app.istio.namespace)",
 							"--istiod-cert-duration=\(#config.app.tls.istiodCertificateDuration)",
@@ -137,7 +145,9 @@ import (
 					if #config.volumeMounts != _|_ {
 						volumeMounts: #config.volumeMounts
 					}
+					if #config.resources != _|_ {
 						resources: #config.resources
+					}
 						securityContext: #config.securityContext
 					}
 				]

@@ -3,6 +3,7 @@ package templates
 import (
 	corev1 "k8s.io/api/core/v1"
 	timoniv1 "timoni.sh/core/v1alpha1"
+	"net"
 )
 
 // Config defines the schema and defaults for the Instance values.
@@ -26,10 +27,10 @@ import (
 	// The labels allows adding `metadata.labels` to all resources.
 	// The `app.kubernetes.io/name` and `app.kubernetes.io/version` labels
 	// are automatically generated and can't be overwritten.
-	// metadata: labels: timoniv1.#Labels
+	metadata: labels: timoniv1.#Labels
 
 	// // The annotations allows adding `metadata.annotations` to all resources.
-	// metadata: annotations: timoniv1.#Annotations
+	metadata: annotations?: timoniv1.#Annotations
 
 	// The selector allows adding label selectors to Deployments and Services.
 	// The `app.kubernetes.io/name` label selector is automatically generated
@@ -48,12 +49,7 @@ import (
 
 	// The resources allows setting the container resource requirements.
 	// By default, the container requests 10m CPU and 32Mi memory.
-	resources: timoniv1.#ResourceRequirements & {
-		requests: {
-			cpu:    *"10m" | timoniv1.#CPUQuantity
-			memory: *"32Mi" | timoniv1.#MemoryQuantity
-		}
-	}
+	resources?: timoniv1.#ResourceRequirements
 
 	// The number of pods replicas.
 	// By default, the number of replicas is 1.
@@ -65,7 +61,6 @@ import (
 		allowPrivilegeEscalation: *false | true
 		readOnlyRootFilesystem: *true | false
 		runAsNonRoot: *true | false
-		// privileged:               *false | true
 		capabilities: {
 			drop: *["ALL"] | [string]
 		}
@@ -90,7 +85,7 @@ import (
 		}
 		server: {
 			serving: {
-				address: *"0.0.0.0" | string
+				address: *"0.0.0.0" | net.IP
 				certificateKeySize: *2048 | int
 				//certificateKeySize: *2048 | int & if signatureAlgorithm == "RSA" { >= 2048 } else { 256 | 348 }
 				signatureAlgorithm: *"RSA" | "ECDSA"
@@ -110,7 +105,7 @@ import (
 		controller: {
 			leaderElectionNamespace: *"istio-system" | string
 			configmapNamespaceSelector?: string
-			disableKubernetesClientRateLimiter: *false | bool
+			disableKubernetesClientRateLimiter: *false | true
 		}
 		tls: {
 			rootCAFile: *"" | string
@@ -131,32 +126,33 @@ import (
 		certmanager: {
 			additionalAnnotations?: timoniv1.#Annotations
 			namespace: *"istio-system" | string
-			preserveCertificateRequests: *false | bool
+			preserveCertificateRequests: *false | true
 			issuer: {
-				enabled: *true | bool
+				enabled: *true | false
 				name: *"istio-ca" | string
-				kind: *"Issuer" | string & "Issuer" | "ClusterIssuer"
+				kind: *"Issuer" | "ClusterIssuer"
 				group: *"cert-manager.io" | string
 			}
 		}
 		runtimeConfiguration: {
-			create: *false | bool
+			create: *false | true
 			name: *"" | string
 			issuer: {
 				name: *"istio-ca" | string
-				kind: *"Issuer" | string & "Issuer" | "ClusterIssuer"
+				kind: *"Issuer" | "ClusterIssuer"
 				group: *"cert-manager.io" | string
 			}
 		}
 	}
 
 	// Pod optional settings.
-	podAnnotations?: {[string]: string}
+	podLabels?: timoniv1.#Labels
+	podAnnotations?: timoniv1.#Annotations
 	podSecurityContext?: corev1.#PodSecurityContext
 	imagePullSecrets?: [...timoniv1.#ObjectReference]
 	tolerations?: [...corev1.#Toleration]
 	affinity?: corev1.#Affinity
-	nodeSelector?: corev1.NodeSelector
+	nodeSelector: "kubernetes.io/os": "linux"
 	topologySpreadConstraints?: [...corev1.#TopologySpreadConstraint]
 	extraObjects?: [...timoniv1.#ObjectReference]
 
@@ -187,6 +183,9 @@ import (
 			for resource in config.extraObjects {
 				"\(resource.metadata.name)": resource
 			}
+		}
+		if config.app.tls.istiodCertificateEnable == "true" {
+			certificate: #Certificate & {#config: config}	
 		}
 	}
 	tests: {
