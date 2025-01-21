@@ -6,6 +6,8 @@ import (
 	"net"
 )
 
+#Duration: string & =~"^[+-]?((\\d+h)?(\\d+m)?(\\d+s)?(\\d+ms)?(\\d+(us|µs))?(\\d+ns)?)$"
+
 // Config defines the schema and defaults for the Instance values.
 #Config: {
 	// The kubeVersion is a required field, set at apply-time
@@ -62,7 +64,7 @@ import (
 		readOnlyRootFilesystem: *true | false
 		runAsNonRoot: *true | false
 		capabilities: {
-			drop: *["ALL"] | [string]
+			drop: *["ALL"] | [...string]
 		}
 	}
 
@@ -74,7 +76,7 @@ import (
 		nodePort?: int & >30000 & <=32767
 	}
 
-	volumes?: [...corev1.#Volumes]
+	volumes?: [...corev1.#Volume]
 	volumeMounts?: [...corev1.#VolumeMount]
 
 	app: {
@@ -82,6 +84,17 @@ import (
 		logFormat: *"text" | "json"
 		metrics: {
 			port: *9402 | int & >=1 & <=65535
+			service: {
+				enabled: *true | false
+				type: *corev1.#ServiceTypeClusterIP | corev1.#enumServiceType
+				servicemonitor: {
+					enabled: *false | true
+					prometheusInstance: *"default" | string
+					interval: *"10s" | #Duration
+					scrapeTimeout: *"5s" | #Duration
+					labels: timoniv1.#Labels
+				}
+			}
 		}
 		server: {
 			serving: {
@@ -92,15 +105,15 @@ import (
 				port: *6443 | int & >0 & <=65535
 			}
 			clusterID: *"Kubernetes" | string
-			maxCertificateDuration: *"1h" | timoniv1.#Duration
+			maxCertificateDuration: *"1h" | #Duration
 			authenticators: {
 				enableClientCert: *false | true
 			}
-			caTrustedNodeAccounts?: [string]
+			caTrustedNodeAccounts?: [...string]
 		}
 		istio: {
 			namespace: *"istio-system" | string
-			revisions: *["default"] | [string]
+			revisions: *["default"] | [...string]
 		}
 		controller: {
 			leaderElectionNamespace: *"istio-system" | string
@@ -109,15 +122,15 @@ import (
 		}
 		tls: {
 			rootCAFile: *"" | string
-			certificateDNSNames: *["cert-manager-istio-csr.cert-manager.svc"] | [string]
-			certificateDuration: *"1h" | timoniv1.#Duration
+			certificateDNSNames: *["cert-manager-istio-csr.cert-manager.svc"] | [...string]
+			certificateDuration: *"1h" | #Duration
 			trustDomain: *"cluster.local" | string
 			istiodCertificateEnable: *"true" | "dynamic" | "false"
-			istiodCertificateDuration: *"1h" | timoniv1.#Duration
-			istiodCertificateRenewBefore: *"30m" | timoniv1.#Duration
+			istiodCertificateDuration: *"1h" | #Duration
+			istiodCertificateRenewBefore: *"30m" | #Duration
 			istiodPrivateKeyAlgorithm: *app.server.serving.signatureAlgorithm | "RSA" | "ECDSA"
 			istiodPrivateKeySize: *2048 | int
-			istiodAdditionalDNSNames: *[] | [string]
+			istiodAdditionalDNSNames: *[] | [...string]
 		}
 		readinessProbe: {
 			port: *6060 | int & >0 & <=65535
@@ -135,7 +148,7 @@ import (
 			}
 		}
 		runtimeConfiguration: {
-			create: *false | true
+			create: *true | false
 			name: *"" | string
 			issuer: {
 				name: *"istio-ca" | string
@@ -152,9 +165,9 @@ import (
 	imagePullSecrets?: [...timoniv1.#ObjectReference]
 	tolerations?: [...corev1.#Toleration]
 	affinity?: corev1.#Affinity
-	nodeSelector: "kubernetes.io/os": "linux"
+	nodeSelector: timoniv1.#Labels & {"kubernetes.io/os": "linux"}
 	topologySpreadConstraints?: [...corev1.#TopologySpreadConstraint]
-	extraObjects?: [...timoniv1.#ObjectReference]
+	extraObjects?: [...]
 
 	test: {
 		enabled: *false | bool
@@ -186,6 +199,15 @@ import (
 		}
 		if config.app.tls.istiodCertificateEnable == "true" {
 			certificate: #Certificate & {#config: config}	
+		}
+		if config.app.metrics.service.enabled == true {
+			serviceMetrics: #ServiceMetrics & {#config: config}
+		}
+		if config.app.metrics.service.servicemonitor.enabled == true {
+			serviceMonitor: #ServiceMonitor & {#config: config}
+		}
+		if config.app.runtimeConfiguration.create == true {
+			runtimeConfiguration: #RuntimeConfigMap & {#config: config}
 		}
 	}
 	tests: {

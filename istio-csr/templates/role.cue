@@ -9,6 +9,10 @@ import (
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "Role"
 	metadata: #config.metadata
+    #resourceName: #config.app.runtimeConfiguration.name
+    if #config.app.runtimeConfiguration.name == "" {
+        #resourceName: #config.metadata.name
+    }
     rules: [...rbacv1.#PolicyRule] & [
         {
             apiGroups: ["cert-manager.io"]
@@ -22,7 +26,7 @@ import (
             apiGroups: [""]
             resources: ["configmaps"]
             verbs: ["get", "list", "watch"]
-            resourceNames: [#config.app.runtimeConfiguration.name]
+            resourceNames: [#resourceName]
         }
     ]
 }

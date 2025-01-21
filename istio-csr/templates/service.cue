@@ -9,9 +9,10 @@ import (
 	apiVersion: "v1"
 	kind:       "Service"
 	metadata:   #config.metadata
+	metadata: labels: {"app": #config.metadata.name}
 	spec: corev1.#ServiceSpec & {
-		type:     corev1.#ServiceTypeClusterIP
-		selector: #config.selector.labels
+		type:     #config.service.type
+		selector: {"app": #config.metadata.name}
 		ports: [...corev1.#ServicePort] & [
 			{
 				port:       #config.service.port

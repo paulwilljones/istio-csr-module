@@ -13,10 +13,12 @@ import (
 	metadata:   #config.metadata
 	spec: appsv1.#DeploymentSpec & {
 		replicas: #config.replicas
-		selector: matchLabels: #config.selector.labels
+		selector: matchLabels: {"app": #config.metadata.name}
 		template: corev1.#PodTemplateSpec & {
 			metadata: {
 				labels: #config.selector.labels
+				labels: #config.metadata.labels
+				labels: {"app": #config.metadata.name}
 				if #config.podLabels != _|_ {
 					labels: #config.podLabels
 				}
@@ -108,7 +110,7 @@ import (
 
 							// trusted node accounts
 						if #config.app.server.caTrustedNodeAccounts != _|_ {
-							"--ca-trusted-node-accounts=\(#config.app.server.caTrustedNodeAccounts)",
+							"--ca-trusted-node-accounts=\(strings.Join(#config.app.server.caTrustedNodeAccounts, ","))",
 						}
 							// controller
 							"--leader-election-namespace=\(#config.app.controller.leaderElectionNamespace)",
