@@ -173,4 +173,5 @@ values: {
 			backoffLimit: 4
 		}
 	}]
+	createSelfSignedCA: true
 }

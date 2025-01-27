@@ -1,8 +1,8 @@
 bundle: {
 	apiVersion: "v1alpha1"
-	name:       "istio-csr"
+	name:       "cert-manager"
 	instances: {
-		certmanager: {
+		"cert-manager": {
 			module: {
 				url:     "oci://ghcr.io/nalum/timoni/modules/cert-manager"
 				version: "1.14.5-0"
@@ -28,18 +28,7 @@ bundle: {
                 webhook: {
                     podDisruptionBudget: minAvailable: 3
                 }
-
-                test: enabled: false
             }
-		}
-		istio_csr: {
-			module: {
-				url:     "oci://ghcr.io/paulwilljones/modules/istio-csr"
-				version: "6.5.3"
-			}
-			namespace: "istio-csr"
-			values: {
-			}
 		}
 	}
 }

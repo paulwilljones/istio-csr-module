@@ -22,12 +22,13 @@ import (
             apiGroups: ["authentication.k8s.io"]
             resources: ["tokenreviews"]
             verbs: ["create"]
-        }, {
-            if #config.app.tls.istiodCertificateEnable == "dynamic" {
-                apiGroups: ["cert-manager.io"]
-                resources: ["certificates"]
-                verbs: ["list", "get", "watch"]
-            }
+        }, 
+        if #config.app.tls.istiodCertificateEnable == "dynamic" {
+        {
+            apiGroups: ["cert-manager.io"]
+            resources: ["certificates"]
+            verbs: ["list", "get", "watch"]
+        }
         }
     ]
 }

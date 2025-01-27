@@ -8,7 +8,9 @@ import (
 	#config:     #Config
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "Role"
-	metadata: #config.metadata
+	metadata: name: #config.metadata.name
+    metadata: namespace: #config.app.certmanager.namespace
+    metadata: labels: #config.metadata.labels
     #resourceName: #config.app.runtimeConfiguration.name
     if #config.app.runtimeConfiguration.name == "" {
         #resourceName: #config.metadata.name

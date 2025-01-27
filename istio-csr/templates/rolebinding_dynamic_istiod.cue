@@ -13,7 +13,9 @@ import (
     }
 	apiVersion: "rbac.authorization.k8s.io/v1"
     kind: "RoleBinding"
-    metadata: #meta
+    metadata: name: #meta.name
+    metadata: namespace: #config.app.istio.namespace
+    metadata: labels: #config.metadata.labels
     subjects: [...rbacv1.#Subject] & [
         {
             kind: "ServiceAccount"

@@ -22,7 +22,14 @@ import (
       #config.app.tls.istiodAdditionalDNSNames,
     }
   ], -1)}
-  metadata: #config.metadata
+  metadata: name: "istiod"
+  metadata: namespace: #config.app.istio.namespace
+  metadata: labels: #config.metadata.labels
+if #config.app.certmanager.additionalAnnotations != _|_ {
+  metadata: annotations: #config.app.certmanager.additionalAnnotations
+}
+  
+  // metadata: #config.metadata
   spec: certmanager.#CertificateSpec & {
     commonName: net.FQDN & "istiod.\(#config.app.istio.namespace).svc"
     dnsNames: #dnsNames

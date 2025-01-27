@@ -10,11 +10,12 @@ import (
     #meta: timoniv1.#MetaComponent & {
         #Meta: #config.metadata
         #Component: "leases"
-        #Namespace: #config.app.controller.leaderElectionNamespace
     }
 	apiVersion: "rbac.authorization.k8s.io/v1"
 	kind:       "Role"
-    metadata: #meta
+    metadata: name: #meta.name
+    metadata: namespace: #config.app.controller.leaderElectionNamespace
+    metadata: labels: #config.metadata.labels
     rules: [...rbacv1.#PolicyRule] & [
         {
             apiGroups: ["coordination.k8s.io"]

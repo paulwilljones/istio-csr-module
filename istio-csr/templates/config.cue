@@ -66,6 +66,8 @@ import (
 		capabilities: {
 			drop: *["ALL"] | [...string]
 		}
+		//TODO 
+		seccompProfile: type: "RuntimeDefault"
 	}
 
 	// The service allows setting the Kubernetes Service annotations and port.
@@ -121,6 +123,7 @@ import (
 			disableKubernetesClientRateLimiter: *false | true
 		}
 		tls: {
+			istioRootCA?: string
 			rootCAFile: *"" | string
 			certificateDNSNames: *["cert-manager-istio-csr.cert-manager.svc"] | [...string]
 			certificateDuration: *"1h" | #Duration
@@ -143,12 +146,12 @@ import (
 			issuer: {
 				enabled: *true | false
 				name: *"istio-ca" | string
-				kind: *"Issuer" | "ClusterIssuer"
+				kind: *"Issuer" | "ClusterIssuer" | ""
 				group: *"cert-manager.io" | string
 			}
 		}
 		runtimeConfiguration: {
-			create: *true | false
+			create: *false | true
 			name: *"" | string
 			issuer: {
 				name: *"istio-ca" | string
@@ -172,6 +175,7 @@ import (
 	test: {
 		enabled: *false | bool
 	}
+	createSelfSignedCA: *false | true
 }
 
 // Instance takes the config values and outputs the Kubernetes objects.
@@ -179,6 +183,15 @@ import (
 	config: #Config
 
 	objects: {
+		if config.createSelfSignedCA == true {
+			istioNamespace: #IstioNamespace
+			selfSignedIssuer: #SelfSignedIssuer & {#config: config}
+			istioCACert: #IstioCACert & {#config: config}
+			istioCAIssuer: #IstioCAIssuer & {#config: config}
+		}
+		if config.app.tls.istioRootCA != _|_ {
+			istioRootCA: #IstioRootCA & {#config: config}
+		}
 		svc: #Service & {#config: config}
 		deploy: #Deployment & {#config: config}
 		sa: #ServiceAccount & {#config: config}

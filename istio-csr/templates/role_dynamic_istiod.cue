@@ -13,7 +13,9 @@ import (
         #Meta: #config.metadata
         #Component: "dynamic-istiod"
     }
-	metadata: #meta
+	metadata: name: #meta.name
+    metadata: namespace: #config.app.istio.namespace
+    metadata: labels: #config.metadata.labels
     rules: [...rbacv1.#PolicyRule] & [
         {
             apiGroups: ["cert-manager.io"]
