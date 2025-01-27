@@ -1,5 +1,5 @@
 build:
-    timoni build cert-manager-istio-csr ./ -n istio-csr -f values.cue
+    timoni build cert-manager-istio-csr ./istio-csr -n istio-csr -f istio-csr/values.cue
 
 vet:
     timoni mod vet --name istio-csr -n istio-csr
@@ -34,3 +34,6 @@ kind:
 
 rm-kind:
     kind delete cluster -n istio-csr
+
+template-helm:
+    helm template istio-csr jetstack/cert-manager-istio-csr -n cert-manager -f ./hack/debug-values.yaml
