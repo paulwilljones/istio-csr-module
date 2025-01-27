@@ -102,7 +102,6 @@ import (
 			serving: {
 				address: *"0.0.0.0" | net.IP
 				certificateKeySize: *2048 | int
-				//certificateKeySize: *2048 | int & if signatureAlgorithm == "RSA" { >= 2048 } else { 256 | 348 }
 				signatureAlgorithm: *"RSA" | "ECDSA"
 				port: *6443 | int & >0 & <=65535
 			}
@@ -168,7 +167,7 @@ import (
 	imagePullSecrets?: [...timoniv1.#ObjectReference]
 	tolerations?: [...corev1.#Toleration]
 	affinity?: corev1.#Affinity
-	nodeSelector: timoniv1.#Labels & {"kubernetes.io/os": "linux"}
+	nodeSelector: *{"kubernetes.io/os": "linux"} | timoniv1.#Labels 
 	topologySpreadConstraints?: [...corev1.#TopologySpreadConstraint]
 	extraObjects?: [...]
 

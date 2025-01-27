@@ -9,7 +9,7 @@ push:
 
 apply-runtime:
     timoni bundle apply -f istio-csr/cert-manager-istio-csr-rootca-issuer.cue
-    kubectl appy -f hack/issuer.yaml
+    kubectl apply -f hack/issuer.yaml
     timoni bundle apply -f istio-csr/cert-manager-istio-csr-rootca.cue --runtime istio-csr/cert-manager-istio-csr-rootca-runtime.cue
 
 delete-runtime:
@@ -31,3 +31,6 @@ delete:
 
 kind:
     kind create cluster -n istio-csr
+
+rm-kind:
+    kind delete cluster -n istio-csr
