@@ -8,26 +8,26 @@ push:
     timoni mod push ./istio-csr/ oci://ghcr.io/paulwilljones/modules/istio-csr --version=0.0.1 --creds=timoni:$GITHUB_TOKEN
 
 apply-runtime:
-    timoni bundle apply -f istio-csr/cert-manager-istio-csr-rootca-issuer.cue
+    timoni bundle apply -f cert-manager-istio-csr-rootca-issuer.cue
     kubectl apply -f hack/issuer.yaml
-    timoni bundle apply -f istio-csr/cert-manager-istio-csr-rootca.cue --runtime istio-csr/cert-manager-istio-csr-rootca-runtime.cue
+    timoni bundle apply -f cert-manager-istio-csr-rootca.cue --runtime cert-manager-istio-csr-rootca-runtime.cue
 
 delete-runtime:
-    timoni bundle delete -f istio-csr/cert-manager-istio-csr-rootca.cue --runtime istio-csr/cert-manager-istio-csr-rootca-runtime.cue
+    timoni bundle delete -f cert-manager-istio-csr-rootca.cue --runtime cert-manager-istio-csr-rootca-runtime.cue
     kubectl delete -f hack/issuer.yaml
-    timoni bundle delete -f istio-csr/cert-manager-istio-csr-rootca-issuer.cue
+    timoni bundle delete -f cert-manager-istio-csr-rootca-issuer.cue
 
 apply-dynamic:
-    timoni bundle apply -f istio-csr/cert-manager-istio-csr-dynamic.cue
+    timoni bundle apply -f cert-manager-istio-csr-dynamic.cue
 
 delete-dynamic:
-    timoni bundle delete -f istio-csr/cert-manager-istio-csr-dynamic.cue
+    timoni bundle delete -f cert-manager-istio-csr-dynamic.cue
 
 apply:
-    timoni bundle apply -f istio-csr/cert-manager-istio-csr-simple.cue
+    timoni bundle apply -f cert-manager-istio-csr-simple.cue
 
 delete:
-    timoni bundle delete -f istio-csr/cert-manager-istio-cue-simple.cue
+    timoni bundle delete -f cert-manager-istio-csr-simple.cue
 
 kind:
     kind create cluster -n istio-csr

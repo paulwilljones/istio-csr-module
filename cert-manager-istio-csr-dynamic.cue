@@ -34,7 +34,7 @@ bundle: {
 			module: {
 				//url:     "oci://ghcr.io/paulwilljones/modules/istio-csr"
 				//version: "6.5.3"
-				url: "file://./"
+				url: "file://istio-csr/"
 			}
 			namespace: "cert-manager"
 			values: {
